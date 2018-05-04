@@ -19,7 +19,10 @@ fn crack(password :&str, starting: &str) -> bool {
                     break;
                 }
             }
-            current_string.push_str(&std::iter::repeat("a").take(depth).collect::<String>());
+            while depth > 0 {
+                current_string.push('a');
+                depth -= 1;
+            }
             a = 'a' as u8;
         } else {
             current_string.pop();
@@ -29,6 +32,7 @@ fn crack(password :&str, starting: &str) -> bool {
             println!("Found: {}", current_string);
             return true;
         }
+//        println!("Current: {}", current_string);
         a += 1;
     }
 }
