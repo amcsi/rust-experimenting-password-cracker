@@ -1,11 +1,9 @@
 fn main() {
-    crack("bb", "");
+    crack("zzzzz", "");
 }
 
 fn crack(password :&str, starting: &str) -> bool {
-    let len = starting.len();
     let mut current_string = starting.to_string();
-
 
     let mut a = 'z' as u8 + 1;
     loop {
@@ -31,8 +29,6 @@ fn crack(password :&str, starting: &str) -> bool {
             println!("Found: {}", current_string);
             return true;
         }
-        println!("Current string: {}", current_string);
         a += 1;
     }
-    false
 }
