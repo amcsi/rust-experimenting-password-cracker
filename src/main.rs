@@ -1,6 +1,37 @@
+extern crate rayon;
+
+use rayon::prelude::*;
+use std::str;
+
 fn main() {
     crack("zzzzz", &Vec::new());
 }
+
+struct PasswordToCrack<'a> {
+    password: &'a str,
+    i: u64,
+}
+
+fn generate_string(mut i: u64) -> Vec<u8> {
+    let mut result = vec![];
+    if i == 0 {
+        return result;
+    }
+    let radix = 26;
+    const A_DEC: u8 = 97;
+
+    loop {
+        let m = (i % radix) as u8;
+        i = i / radix;
+
+        result.push(A_DEC + m);
+        if i == 0 {
+            break;
+        }
+    }
+    result.into_iter().rev().collect()
+}
+
 
 fn crack(password :&str, starting: &Vec<u8>) -> bool {
     let password_bytes = Vec::from(password);
@@ -38,4 +69,25 @@ fn crack(password :&str, starting: &Vec<u8>) -> bool {
             depth -= 1;
         }
     }
+}
+
+#[test]
+fn test_calculate_str_len() {
+    assert_eq!(0, generate_string(0).len());
+    assert_eq!(1, generate_string(1).len());
+    assert_eq!(1, generate_string(26).len());
+    assert_eq!(2, generate_string(27).len());
+    assert_eq!(2, generate_string(676).len());
+    assert_eq!(3, generate_string(677).len());
+}
+
+
+#[test]
+fn test_generate_string() {
+    assert_eq!("0", str::from_utf8(&generate_string(0)[..]).unwrap());
+    assert_eq!("a", str::from_utf8(&generate_string(1)[..]).unwrap());
+    assert_eq!("z", str::from_utf8(&generate_string(26)[..]).unwrap());
+    assert_eq!("aa", str::from_utf8(&generate_string(27)[..]).unwrap());
+    assert_eq!("zz", str::from_utf8(&generate_string(676)[..]).unwrap());
+    assert_eq!("aaa", str::from_utf8(&generate_string(677)[..]).unwrap());
 }
