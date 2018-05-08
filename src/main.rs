@@ -1,7 +1,6 @@
 extern crate rayon;
 
 use rayon::prelude::*;
-use std::str;
 
 fn main() {
     crack("zzzzz");
@@ -56,16 +55,11 @@ impl Iterator for PasswordIterator {
 fn crack(password: &str) -> bool {
     let password_bytes = Vec::from(password);
 
-    for current_string in PasswordIterator::new() {
-        if &password_bytes == &current_string {
-            match String::from_utf8(current_string) {
-                Ok(found_string) => println!("Found: {}", found_string),
-                Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
-            }
-            return true;
-        }
-    }
-    return false;
+    let found_string_index = ((0u64)..99999999999).into_par_iter().find_first(|i| {
+        return &password_bytes == &generate_string(*i);
+    });
+    println!("Found: {}", String::from_utf8(generate_string(found_string_index.unwrap())).unwrap());
+    true
 }
 
 #[test]
