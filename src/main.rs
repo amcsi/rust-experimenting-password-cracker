@@ -12,6 +12,7 @@ struct PasswordToCrack<'a> {
     i: u64,
 }
 
+/// Generates a string to crack based on an index seed
 fn generate_string(mut i: u64) -> Vec<u8> {
     let mut result = vec![];
     if i == 0 {
@@ -20,14 +21,14 @@ fn generate_string(mut i: u64) -> Vec<u8> {
     let radix = 26;
     const A_DEC: u8 = 97;
 
-    loop {
-        let m = (i % radix) as u8;
-        i = i / radix;
+    while i > 0 {
+        let remainder = i % radix;
+        let remainder_zero_shifted = if remainder == 0 { radix } else { remainder };
+        let m = remainder_zero_shifted - 1;
 
-        result.push(A_DEC + m);
-        if i == 0 {
-            break;
-        }
+        i = (i - remainder_zero_shifted) / radix;
+
+        result.push(A_DEC + m as u8);
     }
     result.into_iter().rev().collect()
 }
@@ -77,17 +78,17 @@ fn test_calculate_str_len() {
     assert_eq!(1, generate_string(1).len());
     assert_eq!(1, generate_string(26).len());
     assert_eq!(2, generate_string(27).len());
-    assert_eq!(2, generate_string(676).len());
-    assert_eq!(3, generate_string(677).len());
+    assert_eq!(2, generate_string(702).len());
+    assert_eq!(3, generate_string(703).len());
 }
 
 
 #[test]
 fn test_generate_string() {
-    assert_eq!("0", str::from_utf8(&generate_string(0)[..]).unwrap());
+    assert_eq!("", str::from_utf8(&generate_string(0)[..]).unwrap());
     assert_eq!("a", str::from_utf8(&generate_string(1)[..]).unwrap());
     assert_eq!("z", str::from_utf8(&generate_string(26)[..]).unwrap());
     assert_eq!("aa", str::from_utf8(&generate_string(27)[..]).unwrap());
-    assert_eq!("zz", str::from_utf8(&generate_string(676)[..]).unwrap());
-    assert_eq!("aaa", str::from_utf8(&generate_string(677)[..]).unwrap());
+    assert_eq!("zz", str::from_utf8(&generate_string(702)[..]).unwrap());
+    assert_eq!("aaa", str::from_utf8(&generate_string(703)[..]).unwrap());
 }
