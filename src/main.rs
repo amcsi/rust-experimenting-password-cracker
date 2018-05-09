@@ -6,17 +6,14 @@ fn main() {
     crack("zzzzz");
 }
 
-struct PasswordToCrack<'a> {
-    password: &'a str,
-    i: u64,
-}
-
-/// Generates a string to crack based on an index seed
+/// Generates a string Vec. For use with tests.
 fn generate_string(i: u64) -> Vec<u8> {
     let mut array = [0u8; 20];
     generate_char_array(i, &mut array).to_vec()
 }
 
+/// Generates a string slice (in u8) to crack based on an index seed.
+/// An array needs to be passed to avoid performance penalties with allocating a Vec.
 fn generate_char_array(mut i: u64, reversed: &mut [u8; 20]) -> &[u8] {
     if i == 0 {
         return &[];
@@ -44,27 +41,7 @@ fn generate_char_array(mut i: u64, reversed: &mut [u8; 20]) -> &[u8] {
     &(reversed[0..digit])
 }
 
-struct PasswordIterator {
-    i: u64,
-}
-
-impl<'a> PasswordIterator {
-    fn new() -> Self {
-        PasswordIterator { i: 0 }
-    }
-}
-
-impl Iterator for PasswordIterator {
-    type Item = Vec<u8>;
-
-    fn next(&mut self) -> Option<Vec<u8>> {
-        let i = self.i;
-        self.i += 1;
-        return Some(generate_string(i));
-    }
-}
-
-fn crack(password: &str) -> bool {
+fn crack(password: &str) {
     let password_bytes = Vec::from(password);
 
     let found_string_index = ((0u64)..99999999999).into_par_iter().find_first(|i| {
@@ -73,7 +50,6 @@ fn crack(password: &str) -> bool {
         return &password_bytes == &bytes;
     });
     println!("Found: {}", String::from_utf8(generate_string(found_string_index.unwrap())).unwrap());
-    true
 }
 
 #[test]
