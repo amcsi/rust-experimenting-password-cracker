@@ -12,14 +12,19 @@ struct PasswordToCrack<'a> {
 }
 
 /// Generates a string to crack based on an index seed
-fn generate_string(mut i: u64) -> Vec<u8> {
-    let mut result = vec![];
+fn generate_string(i: u64) -> Vec<u8> {
+    let mut array = [0u8; 20];
+    generate_char_array(i, &mut array).to_vec()
+}
+
+fn generate_char_array(mut i: u64, reversed: &mut [u8; 20]) -> &[u8] {
     if i == 0 {
-        return result;
+        return &[];
     }
     let radix = 26;
     const A_DEC: u8 = 97;
 
+    let mut digit = 0;
     while i > 0 {
         let remainder = i % radix;
         let remainder_zero_shifted = if remainder == 0 { radix } else { remainder };
@@ -27,16 +32,23 @@ fn generate_string(mut i: u64) -> Vec<u8> {
 
         i = (i - remainder_zero_shifted) / radix;
 
-        result.push(A_DEC + m as u8);
+        reversed[digit] = A_DEC + m as u8;
+
+        digit += 1;
     }
-    result.into_iter().rev().collect()
+    for i in 0..(digit / 2) {
+        let swap = reversed[digit - i - 1];
+        reversed[digit - i - 1] = reversed[i];
+        reversed[i] = swap;
+    }
+    &(reversed[0..digit])
 }
 
 struct PasswordIterator {
     i: u64,
 }
 
-impl PasswordIterator {
+impl<'a> PasswordIterator {
     fn new() -> Self {
         PasswordIterator { i: 0 }
     }
@@ -75,10 +87,10 @@ fn test_calculate_str_len() {
 
 #[test]
 fn test_generate_string() {
-    assert_eq!("", str::from_utf8(&generate_string(0)[..]).unwrap());
-    assert_eq!("a", str::from_utf8(&generate_string(1)[..]).unwrap());
-    assert_eq!("z", str::from_utf8(&generate_string(26)[..]).unwrap());
-    assert_eq!("aa", str::from_utf8(&generate_string(27)[..]).unwrap());
-    assert_eq!("zz", str::from_utf8(&generate_string(702)[..]).unwrap());
-    assert_eq!("aaa", str::from_utf8(&generate_string(703)[..]).unwrap());
+    assert_eq!("", String::from_utf8(generate_string(0)).unwrap());
+    assert_eq!("a", String::from_utf8(generate_string(1)).unwrap());
+    assert_eq!("z", String::from_utf8(generate_string(26)).unwrap());
+    assert_eq!("aa", String::from_utf8(generate_string(27)).unwrap());
+    assert_eq!("zz", String::from_utf8(generate_string(702)).unwrap());
+    assert_eq!("aaa", String::from_utf8(generate_string(703)).unwrap());
 }
