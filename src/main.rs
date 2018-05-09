@@ -44,7 +44,7 @@ fn generate_char_array(mut i: u64, reversed: &mut [u8; 20]) -> &[u8] {
 fn crack(password: &str) {
     let password_bytes = Vec::from(password);
 
-    let found_string_index = ((0u64)..99999999999).into_par_iter().find_any(|i| {
+    let found_string_index = ((0u64)..308915776).into_par_iter().find_any(|i| {
         let mut array = [0u8; 20];
         let bytes = generate_char_array(*i, &mut array);
         return &password_bytes == &bytes;
