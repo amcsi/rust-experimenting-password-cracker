@@ -68,7 +68,9 @@ fn crack(password: &str) -> bool {
     let password_bytes = Vec::from(password);
 
     let found_string_index = ((0u64)..99999999999).into_par_iter().find_first(|i| {
-        return &password_bytes == &generate_string(*i);
+        let mut array = [0u8; 20];
+        let bytes = generate_char_array(*i, &mut array);
+        return &password_bytes == &bytes;
     });
     println!("Found: {}", String::from_utf8(generate_string(found_string_index.unwrap())).unwrap());
     true
