@@ -12,6 +12,8 @@ fn generate_string(i: u64) -> Vec<u8> {
     generate_char_array(i, &mut array).to_vec()
 }
 
+const CHAR_COMBINATIONS: u64 = 26;
+
 /// Generates a string slice (in u8) to crack based on an index seed.
 /// An array needs to be passed to avoid performance penalties with allocating a Vec.
 fn generate_char_array(mut i: u64, reversed: &mut [u8; 20]) -> &[u8] {
@@ -44,12 +46,22 @@ fn generate_char_array(mut i: u64, reversed: &mut [u8; 20]) -> &[u8] {
 fn crack(password: &str) {
     let password_bytes = Vec::from(password);
 
-    let found_string_index = ((0u64)..308915776).into_par_iter().find_any(|i| {
-        let mut array = [0u8; 20];
-        let bytes = generate_char_array(*i, &mut array);
-        return &password_bytes == &bytes;
-    });
-    println!("Found: {}", String::from_utf8(generate_string(found_string_index.unwrap())).unwrap());
+    for length in 1.. {
+        // Get the seed ranges needed to check all the strings with a length of `length`.
+        let range = CHAR_COMBINATIONS.pow(length - 1)..CHAR_COMBINATIONS.pow(length);
+        // Now let's iterate the range in parallel; the order doesn't matter, as long as with the
+        // help of the outer serial loop, we incrementally check longer and longer string length seeds.
+        let option_seed = range.into_par_iter()
+            .find_any(|i| {
+                let mut array = [0u8; 20];
+                let bytes = generate_char_array(*i, &mut array);
+                return &password_bytes == &bytes;
+            });
+        if let Some(found_seed) = option_seed {
+            println!("Found: {}", String::from_utf8(generate_string(found_seed)).unwrap());
+            break;
+        }
+    }
 }
 
 #[test]
